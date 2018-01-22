@@ -12,43 +12,79 @@ class Pagination
     protected $pageSize=20;
     protected $pageNo=1;
     protected $pagingNo=5;
-
-    protected $baseUrl='';
+    protected $baseUrl='/?p=';
     protected $format="";
-
+    protected $preText="<<";
+    protected $nextText=">>";
+    protected $ellipsisText = "<span>...</span>";
     public function page($total, $pageNo){
         $this->total = $total;
         $this->pageNo = $pageNo;
 
-        $html = $this->getPageFormat();
-        $html = str_replace("{prePage}", $this->getPrePageCode(), $html);
-        $html = $this->showIndexPage($html);
-        $html = str_replace( "{paging}", $this->getPagingCode(), $html);
-        $html = $this->showLastPage($html);
-        $html = str_replace("{nextPage}", $this->getNextPageCode(), $html);
-        return $html;
+        $this->initPageFormat();
+        $this->replace("{prePage}", $this->getPrePageCode());
+        $this->showIndexPage();
+        $this->showLeftEllipsis();
+        $this->replace( "{paging}", $this->getPagingCode());
+        $this->showRightEllipsis();
+        $this->showLastPage();
+        $this->replace("{nextPage}", $this->getNextPageCode());
+        return $this->format;
+    }
+    protected function showLeftEllipsis(){
+        $list = $this->getPagingList();
+        if(count($list)==$this->getPagingNo() && $list[1] > 2){
+            return $this->replace('{leftEllipsis}',$this->ellipsisText);
+
+        }
+        return $this->replace('{leftEllipsis}','');
+    }
+    protected function showRightEllipsis(){
+        $list = $this->getPagingList();
+        if(count($list) == $this->getPagingNo() && $list[$this->getPagingNo()]!=$this->getTotalPageNo()){
+            return $this->replace('{rightEllipsis}',$this->ellipsisText);
+        }
+        return $this->replace('{rightEllipsis}','');;
     }
     protected function getPagingList()
     {
         $list = [];
-        $leftLen = $this->getPagingNo() - $this->getPageCenterNo();
-        $rightLen = $this->getPageCenterNo() - 1;
+        $startPageNo = 1;
+        $len = $this->getTotalPageNo();
+        if($this->getTotalPageNo() > $this->getPagingNo()){
+            $rightLen = $this->getPagingNo() - $this->getPageCenterNo();
+            $leftLen = $this->getPageCenterNo() - 1;
 
-        
-    }
-    protected function showIndexPage($html){
-        $pagingList = $this->getPagingList();
-        if($pagingList[0] > 1){
-            return str_replace( "{indexPage}", $this->getIndexPageCode(), $html);
+            $centerPageNo = $this->getPageNo();
+            if(($this->getPageNo()+$rightLen) > $this->getTotalPageNo()){
+                $centerPageNo-= $rightLen-($this->getTotalPageNo()-$this->getPageNo());
+            }
+            if($this->getPageNo() > $this->getPageCenterNo()){
+                $startPageNo = $centerPageNo-$leftLen;
+            }
+
+            $len = $this->getPagingNo();
         }
-        return str_replace( "{indexPage}", '', $html);
+
+        for($i=1;$i<=$len;$i++){
+            $list[$i] = $startPageNo++;
+        }
+
+        return $list;
     }
-    protected function showLastPage($html){
+    protected function showIndexPage(){
+        $pagingList = $this->getPagingList();
+        if($pagingList[1] > 1){
+            return $this->replace( "{indexPage}", $this->getIndexPageCode());
+        }
+        return $this->replace( "{indexPage}", '');
+    }
+    protected function showLastPage(){
         $pagingList = $this->getPagingList();
         if(count($pagingList) == $this->getPagingNo() && $pagingList[$this->pagingNo] != $this->getTotalPageNo()){
-            return str_replace( "{lastPage}", $this->getLastPageCode(), $html);
+            return $this->replace( "{lastPage}", $this->getLastPageCode());
         }
-        return str_replace( "{lastPage}", '', $html);
+        return $this->replace( "{lastPage}", '');
     }
     protected function getPageCenterNo(){
         return ceil($this->getPagingNo()/2);
@@ -60,21 +96,21 @@ class Pagination
         }
         return $this->pagingNo;
     }
-    protected function getPageFormat(){
+    protected function initPageFormat(){
         if(!$this->format){
-            $this->format =  '{prePage}{indexPage}{paging}{lastPage}{nextPage}';
+            $this->format =  '{prePage}{indexPage}{leftEllipsis}{paging}{rightEllipsis}{lastPage}{nextPage}';
         }
         return $this->format;
     }
     protected function getPagingCode(){
         $html = '';
-        for($i=1; $i<=$this->getTotalPageNo(); ++$i){
-            $html.= $this->formatCode($i);
+        foreach($this->getPagingList() as $val){
+            $html.= $this->formatCode($val);
         }
         return $html;
     }
     protected function getNextPageCode(){
-        return $this->formatCode($this->getNextPageNo());
+        return $this->formatCode($this->getNextPageNo(), $this->nextText);
     }
     protected function getNextPageNo(){
         $nextPageNo = $this->getPageNo()+1;
@@ -84,7 +120,7 @@ class Pagination
         return $nextPageNo;
     }
     protected function getPrePageCode(){
-        return $this->formatCode($this->getPrePageNo());
+        return $this->formatCode($this->getPrePageNo(), $this->preText);
     }
     protected function getPrePageNo(){
         $prePageNo = $this->getPageNo()-1;
@@ -131,15 +167,24 @@ class Pagination
         }
         return $num;
     }
-    protected function formatCode($num){
+    protected function formatCode($num, $text=''){
+        if(!$text){
+            $text = $num;
+        }
         $html = '<a ';
-        $html.= 'class="test" ';
+        if($this->getPageNo() == $num){
+            $html.= 'class="current" ';
+        }
         $html.= 'href="'.$this->getUrl($num).'">';
-        $html.= $num;
+        $html.= $text;
         $html.= '</a>';
         return $html;
     }
     protected function getUrl($num){
         return $this->baseUrl.$num;
+    }
+    protected function replace($key, $val){
+        $this->format = str_replace( $key, $val, $this->format);
+        return $this->format;
     }
 }
