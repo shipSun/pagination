@@ -28,10 +28,12 @@ class Pagination
         $html = str_replace("{nextPage}", $this->getNextPageCode(), $html);
         return $html;
     }
-    protected function getPagingList(){
+    protected function getPagingList()
+    {
         $list = [];
-        $leftLen = $this->getPagingNo()-$this->getPageCenterNo();
-        $rightLen = $this->getPageCenterNo()-1;
+        $leftLen = $this->getPagingNo() - $this->getPageCenterNo();
+        $rightLen = $this->getPageCenterNo() - 1;
+
         
     }
     protected function showIndexPage($html){
