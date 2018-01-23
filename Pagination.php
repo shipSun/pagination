@@ -8,15 +8,43 @@
 
 class Pagination
 {
-    protected $total=200;
+    protected $total;
     protected $pageSize=20;
     protected $pageNo=1;
     protected $pagingNo=5;
-    protected $baseUrl='/?p=';
+    protected $baseUrl="";
     protected $format="";
     protected $preText="<<";
     protected $nextText=">>";
     protected $ellipsisText = "<span>...</span>";
+
+    private $totalPageNo;
+    private $prePageNo;
+    private $nextPageNo;
+    private $centerPageNo;
+    private $pagingList;
+
+    public function setPagingNo($pagingNo){
+        $pagingNo = $this->getInt($pagingNo);
+        if($pagingNo){
+            $this->pagingNo = $pagingNo;
+        }
+    }
+    public function setBaseUrl($url){
+        $this->baseUrl = $url;
+    }
+    public function setFormat($format){
+        $this->format = $format;
+    }
+    public function setPreText($text){
+        $this->preText = $text;
+    }
+    public function setNextText($text){
+        $this->nextText = $text;
+    }
+    public function setEllipsisText($text){
+        $this->ellipsisText = $text;
+    }
     public function page($total, $pageNo){
         $this->total = $total;
         $this->pageNo = $pageNo;
@@ -48,29 +76,31 @@ class Pagination
     }
     protected function getPagingList()
     {
-        $list = [];
-        $startPageNo = 1;
-        $len = $this->getTotalPageNo();
-        if($this->getTotalPageNo() > $this->getPagingNo()){
-            $rightLen = $this->getPagingNo() - $this->getPageCenterNo();
-            $leftLen = $this->getPageCenterNo() - 1;
+        if(!$this->pagingList){
+            $list = [];
+            $startPageNo = 1;
+            $len = $this->getTotalPageNo();
+            if($this->getTotalPageNo() > $this->getPagingNo()){
+                $rightLen = $this->getPagingNo() - $this->getPageCenterNo();
+                $leftLen = $this->getPageCenterNo() - 1;
 
-            $centerPageNo = $this->getPageNo();
-            if(($this->getPageNo()+$rightLen) > $this->getTotalPageNo()){
-                $centerPageNo-= $rightLen-($this->getTotalPageNo()-$this->getPageNo());
+                $centerPageNo = $this->getPageNo();
+                if(($this->getPageNo()+$rightLen) > $this->getTotalPageNo()){
+                    $centerPageNo-= $rightLen-($this->getTotalPageNo()-$this->getPageNo());
+                }
+                if($this->getPageNo() > $this->getPageCenterNo()){
+                    $startPageNo = $centerPageNo-$leftLen;
+                }
+
+                $len = $this->getPagingNo();
             }
-            if($this->getPageNo() > $this->getPageCenterNo()){
-                $startPageNo = $centerPageNo-$leftLen;
+
+            for($i=1;$i<=$len;$i++){
+                $list[$i] = $startPageNo++;
             }
-
-            $len = $this->getPagingNo();
+            $this->pagingList = $list;
         }
-
-        for($i=1;$i<=$len;$i++){
-            $list[$i] = $startPageNo++;
-        }
-
-        return $list;
+        return $this->pagingList;
     }
     protected function showIndexPage(){
         $pagingList = $this->getPagingList();
@@ -87,7 +117,10 @@ class Pagination
         return $this->replace( "{lastPage}", '');
     }
     protected function getPageCenterNo(){
-        return ceil($this->getPagingNo()/2);
+        if(!$this->centerPageNo){
+            $this->centerPageNo = ceil($this->getPagingNo()/2);
+        }
+        return $this->centerPageNo;
     }
     protected function getPagingNo(){
         $pagingNo = $this->getInt($this->pagingNo);
@@ -113,22 +146,28 @@ class Pagination
         return $this->formatCode($this->getNextPageNo(), $this->nextText);
     }
     protected function getNextPageNo(){
-        $nextPageNo = $this->getPageNo()+1;
-        if($nextPageNo > $this->getTotalPageNo()){
-            return $this->getTotalPageNo();
+        if(!$this->nextPageNo){
+            $nextPageNo = $this->getPageNo()+1;
+            if($nextPageNo > $this->getTotalPageNo()){
+                return $this->getTotalPageNo();
+            }
+            $this->nextPageNo = $nextPageNo;
         }
-        return $nextPageNo;
+        return $this->nextPageNo;
     }
     protected function getPrePageCode(){
         return $this->formatCode($this->getPrePageNo(), $this->preText);
     }
     protected function getPrePageNo(){
-        $prePageNo = $this->getPageNo()-1;
-        $prePageNo = $this->getInt($prePageNo);
-        if(!$prePageNo){
-            $prePageNo = 1;
+        if(!$this->prePageNo){
+            $prePageNo = $this->getPageNo()-1;
+            $prePageNo = $this->getInt($prePageNo);
+            if(!$prePageNo){
+                $prePageNo = 1;
+            }
+            $this->prePageNo = $prePageNo;
         }
-        return $prePageNo;
+        return $this->prePageNo;
     }
     protected function getIndexPageCode(){
         return $this->formatCode(1);
@@ -137,7 +176,10 @@ class Pagination
         return $this->formatCode($this->getTotalPageNo());
     }
     protected function getTotalPageNo(){
-        return ceil($this->total/$this->getPageSize());
+        if(!$this->totalPageNo){
+            $this->totalPageNo = ceil($this->total/$this->getPageSize());
+        }
+        return $this->totalPageNo;
     }
     protected function getTotal(){
         $this->total = $this->getInt($this->total);
