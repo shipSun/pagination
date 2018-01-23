@@ -25,10 +25,7 @@ class Pagination
     private $pagingList;
 
     public function setPagingNo($pagingNo){
-        $pagingNo = $this->getInt($pagingNo);
-        if($pagingNo){
-            $this->pagingNo = $pagingNo;
-        }
+        $this->pagingNo = $pagingNo;
     }
     public function setBaseUrl($url){
         $this->baseUrl = $url;
