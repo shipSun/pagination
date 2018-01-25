@@ -207,15 +207,12 @@ class Pagination
         return $num;
     }
     protected function formatCode($num, $text=''){
-        if(!$text){
-            $text = $num;
-        }
         $html = '<a ';
-        if($this->getPageNo() == $num){
+        if($this->getPageNo() == $num && ($this->preText != $text && $this->nextText != $text)){
             $html.= 'class="current" ';
         }
         $html.= 'href="'.$this->getUrl($num).'">';
-        $html.= $text;
+        $html.= empty($text) ? $num : $text;
         $html.= '</a>';
         return $html;
     }
