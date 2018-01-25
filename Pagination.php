@@ -66,7 +66,7 @@ class Pagination
     }
     protected function showRightEllipsis(){
         $list = $this->getPagingList();
-        if(count($list) == $this->getPagingNo() && $list[$this->getPagingNo()]!=$this->getTotalPageNo()){
+        if(count($list) == $this->getPagingNo() && $list[$this->getPagingNo()]< $this->getTotalPageNo()-1){
             return $this->replace('{rightEllipsis}',$this->ellipsisText);
         }
         return $this->replace('{rightEllipsis}','');;
