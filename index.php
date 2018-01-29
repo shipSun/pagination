@@ -1,6 +1,7 @@
 <?php
-include_once 'Pagination.php';
-$page = new Pagination();
+include_once 'vendor/autoload.php';
+use Pagination\Page;
+$page = new Page();
 $page->setBaseUrl('http://www.ship.com/pagination?p=');
 $page->setPagingNo(5);
 echo <<<ETO
