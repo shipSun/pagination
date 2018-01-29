@@ -59,17 +59,22 @@ class Pagination
     protected function showLeftEllipsis(){
         $list = $this->getPagingList();
         if(count($list)==$this->getPagingNo() && $list[1] > 2){
+            if($list[1]==3){
+                return $this->replace('{leftEllipsis}',$this->formatCode(2));
+            }
             return $this->replace('{leftEllipsis}',$this->ellipsisText);
-
         }
         return $this->replace('{leftEllipsis}','');
     }
     protected function showRightEllipsis(){
         $list = $this->getPagingList();
         if(count($list) == $this->getPagingNo() && $list[$this->getPagingNo()]< $this->getTotalPageNo()-1){
+            if($list[$this->pagingNo]==($this->getTotalPageNo()-2)){
+                return $this->replace('{rightEllipsis}',$this->formatCode($this->getTotalPageNo()-1));
+            }
             return $this->replace('{rightEllipsis}',$this->ellipsisText);
         }
-        return $this->replace('{rightEllipsis}','');;
+        return $this->replace('{rightEllipsis}','');
     }
     protected function getPagingList()
     {
