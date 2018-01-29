@@ -1,0 +1,19 @@
+{
+    "name": "ship-sun/pagination",
+    "description": "pagination",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "shipSun",
+            "email": "543999860@qq.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+	"autoload":{
+      "psr-4": {
+          "Pagination\\": "src/"
+      }
+  }
+}
